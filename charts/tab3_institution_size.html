@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institution Size Distribution - Interactive Treemap</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --scholar-blue: #234A5D;
+            --warm-thoughts: #4A81A8;
+            --sky-logic: #4A81A8;
+            --coastal-clarity: #7FBFC0;
+            --soft-lecture: #92A4CF;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            gap: 10px;
+        }
+        .treemap-wrapper {
+            width: 320px;
+            height: 240px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .treemap-cell {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        .treemap-cell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .treemap-cell:hover::before {
+            opacity: 1;
+        }
+        .treemap-cell.animate {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .treemap-cell.selected {
+            transform: scale(1.03);
+            z-index: 10;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .treemap-cell.dimmed {
+            opacity: 0.4;
+            filter: grayscale(30%);
+        }
+        .cell-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            text-align: center;
+            line-height: 1.2;
+        }
+        .cell-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .cell-percent {
+            font-size: 10px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+            margin-top: 1px;
+        }
+        .cell-small .cell-value { font-size: 20px; }
+        .cell-small .cell-label { font-size: 10px; }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px 14px;
+            max-width: 340px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            color: var(--scholar-blue);
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+        .legend-item:hover {
+            background: rgba(0,0,0,0.04);
+        }
+        .legend-item.active {
+            background: rgba(0,131,132,0.1);
+        }
+        .legend-item.visible { opacity: 1; }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+        .legend-value {
+            font-weight: 700;
+            color: var(--deep-insight);
+        }
+
+        .detail-panel {
+            width: 100%;
+            max-width: 340px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+            border-radius: 10px;
+            padding: 10px 14px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            min-height: 70px;
+        }
+        .detail-panel.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .detail-content {
+            display: none;
+        }
+        .detail-content.active {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .detail-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .detail-color-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .detail-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--scholar-blue);
+        }
+        .detail-subtitle {
+            font-size: 9px;
+            color: #6B7280;
+        }
+        .detail-stats {
+            display: flex;
+            gap: 16px;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--scholar-blue);
+        }
+        .stat-label {
+            font-size: 8px;
+            color: #9CA3AF;
+            text-transform: uppercase;
+        }
+        .stat-bar-mini {
+            width: 50px;
+            height: 4px;
+            background: #E8EAED;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 3px;
+        }
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .detail-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 50px;
+            color: #9CA3AF;
+            font-size: 11px;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: #234A5D;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 100;
+            white-space: nowrap;
+        }
+        .tooltip.visible { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="treemap-wrapper" id="treemap"></div>
+        <div id="legend" class="legend"></div>
+        <div class="detail-panel" id="detailPanel">
+            <div class="detail-placeholder" id="placeholder">Select a category to see details</div>
+            <div class="detail-content" id="detailContent">
+                <div class="detail-left">
+                    <div class="detail-color-dot" id="detailDot"></div>
+                    <div class="detail-info">
+                        <div class="detail-title" id="detailTitle">-</div>
+                        <div class="detail-subtitle" id="detailSubtitle">-</div>
+                    </div>
+                </div>
+                <div class="detail-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="statInstitutions">-</span>
+                        <span class="stat-label">Institutions</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="statPercent">-</span>
+                        <span class="stat-label">Share</span>
+                        <div class="stat-bar-mini">
+                            <div class="stat-bar-fill" id="statBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        const data = [
+            { label: 'Small', fullLabel: 'Small (1K-5K FTE)', value: 298, percent: 32, color: '#4A81A8', range: '1,000 - 5,000 FTE' },
+            { label: 'Large', fullLabel: 'Large (>10K FTE)', value: 287, percent: 31, color: '#008384', range: '> 10,000 FTE' },
+            { label: 'Medium', fullLabel: 'Medium (5K-10K FTE)', value: 241, percent: 26, color: '#92A4CF', range: '5,000 - 10,000 FTE' },
+            { label: 'Very Small', fullLabel: 'Very Small (<1K FTE)', value: 108, percent: 12, color: '#7FBFC0', range: '< 1,000 FTE' }
+        ];
+
+        const container = document.getElementById('treemap');
+        const legend = document.getElementById('legend');
+        const tooltip = document.getElementById('tooltip');
+        const detailPanel = document.getElementById('detailPanel');
+        const placeholder = document.getElementById('placeholder');
+        const detailContent = document.getElementById('detailContent');
+
+        const width = 320;
+        const height = 240;
+        const gap = 4;
+
+        let selectedIndex = null;
+        const cells = [];
+
+        const sorted = [...data].sort((a, b) => b.value - a.value);
+
+        const topRowHeight = height * 0.55;
+        const bottomRowHeight = height - topRowHeight - gap;
+
+        const topTotal = sorted[0].value + sorted[1].value;
+        const cell1Width = (sorted[0].value / topTotal) * (width - gap);
+        const cell2Width = width - cell1Width - gap;
+
+        const bottomTotal = sorted[2].value + sorted[3].value;
+        const cell3Width = (sorted[2].value / bottomTotal) * (width - gap);
+        const cell4Width = width - cell3Width - gap;
+
+        const layout = [
+            { ...sorted[0], x: 0, y: 0, w: cell1Width, h: topRowHeight },
+            { ...sorted[1], x: cell1Width + gap, y: 0, w: cell2Width, h: topRowHeight },
+            { ...sorted[2], x: 0, y: topRowHeight + gap, w: cell3Width, h: bottomRowHeight },
+            { ...sorted[3], x: cell3Width + gap, y: topRowHeight + gap, w: cell4Width, h: bottomRowHeight, small: true }
+        ];
+
+        layout.forEach((item, index) => {
+            const cell = document.createElement('div');
+            cell.className = `treemap-cell${item.small ? ' cell-small' : ''}`;
+            cell.dataset.index = index;
+            cell.style.cssText = `
+                left: ${item.x}px;
+                top: ${item.y}px;
+                width: ${item.w}px;
+                height: ${item.h}px;
+                background: linear-gradient(135deg, ${item.color}, ${adjustColor(item.color, -25)});
+            `;
+
+            cell.innerHTML = `
+                <span class="cell-label">${item.label}</span>
+                <span class="cell-value">${item.value}</span>
+                <span class="cell-percent">${item.percent}%</span>
+            `;
+
+            cell.addEventListener('click', () => selectCell(index, item));
+            cell.addEventListener('mouseenter', () => {
+                tooltip.textContent = `${item.fullLabel}: ${item.value} institutions`;
+                tooltip.classList.add('visible');
+            });
+            cell.addEventListener('mousemove', (e) => {
+                tooltip.style.left = (e.clientX + 12) + 'px';
+                tooltip.style.top = (e.clientY - 35) + 'px';
+            });
+            cell.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('visible');
+            });
+
+            container.appendChild(cell);
+            cells.push(cell);
+
+            setTimeout(() => {
+                cell.classList.add('animate');
+            }, 100 + index * 100);
+        });
+
+        setTimeout(() => {
+            detailPanel.classList.add('visible');
+        }, 600);
+
+        function selectCell(index, item) {
+            tooltip.classList.remove('visible');
+
+            if (selectedIndex === index) {
+                selectedIndex = null;
+                cells.forEach(c => {
+                    c.classList.remove('selected', 'dimmed');
+                });
+                document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+                placeholder.style.display = 'flex';
+                detailContent.classList.remove('active');
+                return;
+            }
+
+            selectedIndex = index;
+
+            cells.forEach((c, i) => {
+                c.classList.remove('selected', 'dimmed');
+                if (i === index) {
+                    c.classList.add('selected');
+                } else {
+                    c.classList.add('dimmed');
+                }
+            });
+
+            document.querySelectorAll('.legend-item').forEach((li, i) => {
+                li.classList.toggle('active', i === index);
+            });
+
+            showDetails(item);
+        }
+
+        function showDetails(item) {
+            placeholder.style.display = 'none';
+            detailContent.classList.add('active');
+
+            document.getElementById('detailDot').style.background = item.color;
+            document.getElementById('detailTitle').textContent = item.label;
+            document.getElementById('detailSubtitle').textContent = item.range;
+
+            animateNumber('statInstitutions', item.value);
+            document.getElementById('statPercent').textContent = item.percent + '%';
+
+            const statBar = document.getElementById('statBar');
+            statBar.style.background = item.color;
+            statBar.style.width = '0';
+            setTimeout(() => {
+                statBar.style.width = item.percent + '%';
+            }, 100);
+        }
+
+        function animateNumber(elementId, target) {
+            const el = document.getElementById(elementId);
+            const duration = 400;
+            const start = performance.now();
+            const startVal = 0;
+
+            function update(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(startVal + (target - startVal) * ease);
+                el.textContent = current;
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        layout.forEach((item, index) => {
+            const li = document.createElement('div');
+            li.className = 'legend-item';
+            li.innerHTML = `
+                <span class="legend-dot" style="background: ${item.color}"></span>
+                <span>${item.label}</span>
+                <span class="legend-value">${item.value}</span>
+            `;
+            li.addEventListener('click', () => selectCell(index, item));
+            legend.appendChild(li);
+
+            setTimeout(() => {
+                li.classList.add('visible');
+            }, 500 + index * 60);
+        });
+
+        function adjustColor(color, amount) {
+            const hex = color.replace('#', '');
+            const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
+            const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
+            const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>

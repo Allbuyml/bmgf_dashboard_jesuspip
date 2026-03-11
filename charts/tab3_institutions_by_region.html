@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institutions by Region</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --scholar-blue: #234A5D;
+            --warm-thoughts: #4A81A8;
+            --sky-logic: #4A81A8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            padding: 10px 15px;
+        }
+        #chart { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="chart"></div>
+    </div>
+
+    <script>
+        const regionData = [
+            { region: "SE", fullName: "Southeast", institutions: 219 },
+            { region: "FW", fullName: "Far West", institutions: 187 },
+            { region: "ME", fullName: "Mid East", institutions: 149 },
+            { region: "GL", fullName: "Great Lakes", institutions: 119 },
+            { region: "SW", fullName: "Southwest", institutions: 101 },
+            { region: "PL", fullName: "Plains", institutions: 67 },
+            { region: "NE", fullName: "New England", institutions: 45 },
+            { region: "RM", fullName: "Rocky Mtns", institutions: 37 },
+            { region: "OT", fullName: "Outlying", institutions: 10 }
+        ];
+
+        regionData.sort((a, b) => b.institutions - a.institutions);
+
+        const trace = {
+            type: 'bar',
+            x: regionData.map(d => d.region),
+            y: regionData.map(d => d.institutions),
+            marker: {
+                color: regionData.map((d, i) => i < 3 ? '#4A81A8' : '#92A4CF'),
+                line: { color: '#fff', width: 1 }
+            },
+            text: regionData.map(d => d.institutions),
+            textposition: 'outside',
+            textfont: { family: 'Inter Tight', size: 10, color: '#234A5D' },
+            hovertemplate: regionData.map(d => `<b>${d.fullName}</b><br>${d.institutions} institutions<extra></extra>`)
+        };
+
+        const layout = {
+            margin: { l: 35, r: 15, t: 15, b: 35 },
+            xaxis: {
+                tickfont: { family: 'Inter Tight', size: 10, color: '#234A5D' },
+                showgrid: false
+            },
+            yaxis: {
+                showgrid: true,
+                gridcolor: '#F0F2F5',
+                zeroline: false,
+                tickfont: { family: 'Inter Tight', size: 9, color: '#9CA3AF' }
+            },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            bargap: 0.3
+        };
+
+        const config = { displayModeBar: false, responsive: true };
+
+        Plotly.newPlot('chart', [trace], layout, config);
+
+        // Filter update handler
+        window.handleFilterUpdate = function(filters, filteredData) {
+            if (!filteredData || filteredData.length === 0) return;
+
+            const stateToRegion = window.BMGF_STATE_TO_REGION || {};
+            const regionAbbr = {
+                'Southeast': 'SE', 'Far West': 'FW', 'Mid East': 'ME',
+                'Great Lakes': 'GL', 'Southwest': 'SW', 'Plains': 'PL',
+                'New England': 'NE', 'Rocky Mountains': 'RM'
+            };
+
+            const regionMap = {};
+            filteredData.forEach(d => {
+                const region = stateToRegion[d.state];
+                if (region) {
+                    regionMap[region] = (regionMap[region] || 0) + (d.institutions || 0);
+                }
+            });
+
+            const newData = Object.entries(regionMap)
+                .map(([region, institutions]) => ({
+                    region: regionAbbr[region] || region.substring(0, 2),
+                    fullName: region,
+                    institutions: institutions
+                }))
+                .sort((a, b) => b.institutions - a.institutions);
+
+            Plotly.react('chart', [{
+                type: 'bar',
+                x: newData.map(d => d.region),
+                y: newData.map(d => d.institutions),
+                marker: {
+                    color: newData.map((d, i) => i < 3 ? '#4A81A8' : '#92A4CF'),
+                    line: { color: '#fff', width: 1 }
+                },
+                text: newData.map(d => d.institutions),
+                textposition: 'outside',
+                textfont: { family: 'Inter Tight', size: 10, color: '#234A5D' },
+                hovertemplate: newData.map(d => `<b>${d.fullName}</b><br>${d.institutions} institutions<extra></extra>`)
+            }], layout, config);
+        };
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>

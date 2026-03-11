@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Textbooks by Enrollment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --scholar-blue: #234A5D;
+            --warm-thoughts: #4A81A8;
+            --sky-logic: #4A81A8;
+            --coastal-clarity: #7FBFC0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        #chart {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="chart"></div>
+    <script>
+        // Default data
+        const defaultData = [
+            { name: 'MyLab Math Calculus', publisher: 'Pearson', enrollment: 133310 },
+            { name: 'Calculus Single-Variable', publisher: 'Wiley', enrollment: 98775 },
+            { name: 'Thomas Calculus', publisher: 'Pearson', enrollment: 84617 },
+            { name: 'WebAssign Calculus', publisher: 'Cengage', enrollment: 63039 },
+            { name: 'Calculus Single+Multi', publisher: 'Wiley', enrollment: 61642 },
+            { name: 'Knewton Alta Calculus', publisher: 'Other', enrollment: 56726 },
+            { name: 'Calculus OpenStax', publisher: 'OpenStax', enrollment: 52834 },
+            { name: 'Stewart Calculus', publisher: 'Cengage', enrollment: 48521 },
+            { name: 'Larson Calculus', publisher: 'Cengage', enrollment: 42156 },
+            { name: 'Calculus Business', publisher: 'Pearson', enrollment: 38420 }
+        ];
+
+        // Get data from window.BMGF_DATA if available
+        const data = (window.BMGF_DATA && window.BMGF_DATA.topTextbooks && window.BMGF_DATA.topTextbooks.length > 0)
+            ? window.BMGF_DATA.topTextbooks
+            : defaultData;
+
+        const publisherColors = {
+            'Cengage': '#008384',
+            'Pearson': '#234A5D',
+            'Wiley': '#4A81A8',
+            'OpenStax': '#7FBFC0',
+            'Other': '#92A4CF'
+        };
+
+        const colors = data.map(d => publisherColors[d.publisher] || '#92A4CF');
+        const top3Colors = colors.map((c, i) => i < 3 ? '#4A81A8' : c);
+
+        const trace = {
+            type: 'bar',
+            orientation: 'h',
+            y: data.map(d => d.name).reverse(),
+            x: data.map(d => d.enrollment).reverse(),
+            marker: {
+                color: top3Colors.reverse(),
+                line: { width: 0 }
+            },
+            text: data.map(d => (d.enrollment / 1000).toFixed(0) + 'K').reverse(),
+            textposition: 'auto',
+            cliponaxis: false,
+            textfont: {
+                family: 'Inter Tight',
+                size: 11,
+                color: '#234A5D'
+            },
+            hovertemplate: '<b>%{y}</b><br>Enrollment: %{x:,.0f}<extra></extra>'
+        };
+
+        const layout = {
+            margin: { l: 130, r: 70, t: 20, b: 55 },
+            xaxis: {
+                title: {
+                    text: 'Enrollment',
+                    font: { family: 'Inter Tight', size: 11, color: '#6B7280' }
+                },
+                tickfont: { family: 'Inter Tight', size: 10, color: '#6B7280' },
+                gridcolor: '#E8EAED',
+                showline: false,
+                zeroline: false,
+                tickformat: ',.0s'
+            },
+            yaxis: {
+                tickfont: { family: 'Inter Tight', size: 9, color: '#234A5D' },
+                showgrid: false,
+                automargin: true
+            },
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            showlegend: false,
+            bargap: 0.2
+        };
+
+        const config = {
+            displayModeBar: false,
+            responsive: true
+        };
+
+        Plotly.newPlot('chart', [trace], layout, config);
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calc I vs II by Size - Dumbbell</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --scholar-blue: #234A5D;
+            --warm-thoughts: #4A81A8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            padding: 10px 15px;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--scholar-blue);
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .legend-dot.calc1 { background: var(--deep-insight); }
+        .legend-dot.calc2 { background: var(--warm-thoughts); }
+        #chart { width: 100%; height: calc(100% - 30px); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot calc1"></div>
+                <span>Calc I</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot calc2"></div>
+                <span>Calc II</span>
+            </div>
+        </div>
+        <div id="chart"></div>
+    </div>
+
+    <script>
+        const defaultSizeData = [
+            { size: "Large (>20K)", calc1: 485, calc2: 240 },
+            { size: "Medium (5-20K)", calc1: 412, calc2: 203 },
+            { size: "Small (1-5K)", calc1: 298, calc2: 147 },
+            { size: "Very Small (<1K)", calc1: 121, calc2: 62 }
+        ];
+
+        function toDisplayK(value) {
+            const n = Number(value) || 0;
+            return n > 2000 ? Math.round(n / 1000) : Math.round(n);
+        }
+
+        function normalizeSizeRows(rows) {
+            return (rows || [])
+                .map(d => ({
+                    size: d.size,
+                    calc1: toDisplayK(d.calc1),
+                    calc2: toDisplayK(d.calc2)
+                }))
+                .sort((a, b) => a.calc1 - b.calc1);
+        }
+
+        function buildRowsFromFiltered(filteredData) {
+            if (!Array.isArray(filteredData) || filteredData.length === 0) {
+                return [];
+            }
+            const sizeMap = {};
+            filteredData.forEach(d => {
+                const breakdown = d && d.size_breakdown ? d.size_breakdown : {};
+                Object.keys(breakdown).forEach(size => {
+                    if (!sizeMap[size]) sizeMap[size] = { calc1: 0, calc2: 0 };
+                    sizeMap[size].calc1 += Number((breakdown[size] || {}).calc_i) || 0;
+                    sizeMap[size].calc2 += Number((breakdown[size] || {}).calc_ii) || 0;
+                });
+            });
+            return normalizeSizeRows(
+                Object.entries(sizeMap).map(([size, vals]) => ({ size, calc1: vals.calc1, calc2: vals.calc2 }))
+            );
+        }
+
+        function render(sizeRows) {
+            const rows = normalizeSizeRows(sizeRows.length > 0 ? sizeRows : defaultSizeData);
+            const sizes = rows.map(d => d.size);
+            const calc1 = rows.map(d => d.calc1);
+            const calc2 = rows.map(d => d.calc2);
+
+            const traces = [
+                {
+                    type: 'scatter',
+                    mode: 'lines',
+                    x: rows.flatMap(d => [d.calc2, d.calc1, null]),
+                    y: rows.flatMap(d => [d.size, d.size, null]),
+                    line: { color: '#E5E7EB', width: 5 },
+                    showlegend: false,
+                    hoverinfo: 'skip'
+                },
+                {
+                    type: 'scatter',
+                    mode: 'markers+text',
+                    x: calc2,
+                    y: sizes,
+                    text: calc2.map(v => v + 'K'),
+                    textposition: 'bottom center',
+                    textfont: { family: 'Inter Tight', size: 8, color: '#4A81A8' },
+                    marker: { size: 12, color: '#4A81A8', line: { color: '#FFF', width: 2 } },
+                    hovertemplate: '<b>%{y}</b><br>Calc II: %{x}K<extra></extra>',
+                    showlegend: false
+                },
+                {
+                    type: 'scatter',
+                    mode: 'markers+text',
+                    x: calc1,
+                    y: sizes,
+                    text: calc1.map(v => v + 'K'),
+                    textposition: 'top center',
+                    textfont: { family: 'Inter Tight', size: 8, color: '#008384' },
+                    marker: { size: 12, color: '#008384', line: { color: '#FFF', width: 2 } },
+                    hovertemplate: '<b>%{y}</b><br>Calc I: %{x}K<extra></extra>',
+                    showlegend: false
+                }
+            ];
+
+            const layout = {
+                margin: { l: 100, r: 20, t: 5, b: 30 },
+                xaxis: {
+                    showgrid: true,
+                    gridcolor: '#F0F2F5',
+                    zeroline: false,
+                    tickfont: { family: 'Inter Tight', size: 9, color: '#9CA3AF' },
+                    range: [0, Math.max(...calc1, 1) * 1.15]
+                },
+                yaxis: {
+                    showgrid: false,
+                    tickfont: { family: 'Inter Tight', size: 10, color: '#234A5D' }
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                hovermode: 'closest'
+            };
+
+            const config = { displayModeBar: false, responsive: true };
+            Plotly.react('chart', traces, layout, config);
+        }
+
+        const baseRows = (window.BMGF_DATA && window.BMGF_DATA.institutionSizes && window.BMGF_DATA.institutionSizes.length > 0)
+            ? window.BMGF_DATA.institutionSizes.map(d => ({ size: d.size, calc1: d.calc1, calc2: d.calc2 }))
+            : defaultSizeData;
+        render(baseRows);
+
+        window.handleFilterUpdate = function(filters, filteredData) {
+            const rows = buildRowsFromFiltered(filteredData || []);
+            if (rows.length > 0) {
+                render(rows);
+            } else {
+                render(baseRows);
+            }
+        };
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>

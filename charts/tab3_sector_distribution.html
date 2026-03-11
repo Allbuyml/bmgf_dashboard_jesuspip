@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector Distribution - Radial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --scholar-blue: #234A5D;
+            --warm-thoughts: #4A81A8;
+            --sky-logic: #4A81A8;
+            --coastal-clarity: #7FBFC0;
+            --soft-lecture: #92A4CF;
+            --text-muted: #6B7280;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        .radial-wrapper {
+            position: relative;
+            width: 260px;
+            height: 260px;
+        }
+        .radial-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+        .center-text {
+            font-family: 'Playfair Display', serif;
+            fill: var(--scholar-blue);
+        }
+        .center-number { font-size: 36px; font-weight: 600; }
+        .center-label {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 12px;
+            fill: var(--text-muted);
+        }
+        .radial-track {
+            fill: none;
+            stroke: #E8EAED;
+            stroke-linecap: round;
+        }
+        .radial-bar {
+            fill: none;
+            stroke-linecap: round;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            cursor: pointer;
+            transition: stroke-width 0.2s ease;
+        }
+        .radial-bar:hover {
+            stroke-width: 18px !important;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 20px;
+            margin-top: 15px;
+            max-width: 340px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--scholar-blue);
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .legend-value {
+            font-weight: 700;
+            color: var(--deep-insight);
+        }
+        .tooltip {
+            position: fixed;
+            background: #234A5D;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 100;
+        }
+        .tooltip.visible { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="radial-wrapper">
+            <svg id="radial-chart" class="radial-svg" viewBox="-20 -20 240 240"></svg>
+        </div>
+        <div id="legend" class="legend"></div>
+    </div>
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        // Default configuration
+        const defaultConfig = {
+            labels: ['4, Public', '2, Public', '4, PNFP', '4, PFP'],
+            values: [51, 29, 15, 5],
+            realValues: [475, 271, 140, 47],
+            colors: ['#008384', '#92A4CF', '#4A81A8', '#234A5D'],
+            total: 933,
+            totalLabel: 'Institutions'
+        };
+
+        function normalizeSectorName(name) {
+            return String(name || '')
+                .toLowerCase()
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function getSectorColor(name, idx) {
+            const palette = ['#008384', '#92A4CF', '#4A81A8', '#234A5D', '#7FBFC0', '#92A4CF'];
+            const key = normalizeSectorName(name);
+            const fixed = {
+                '4, public': '#008384',
+                '2, public': '#92A4CF',
+                '4, pnfp': '#4A81A8',
+                '4, pfp': '#234A5D',
+                '4-year public': '#008384',
+                '2-year public': '#92A4CF',
+                '4-year private': '#4A81A8'
+            };
+            return fixed[key] || palette[idx % palette.length];
+        }
+
+        function formatPercent(value) {
+            const v = Number(value) || 0;
+            return Number.isInteger(v) ? String(v) : v.toFixed(1);
+        }
+
+        // Build config from dynamic data if available
+        function buildConfigFromDashboard() {
+            if (window.BMGF_DATA && window.BMGF_DATA.sectors) {
+                const sectors = window.BMGF_DATA.sectors.institutions || window.BMGF_DATA.sectors.calc1 || [];
+                if (!Array.isArray(sectors) || sectors.length === 0) {
+                    return defaultConfig;
+                }
+                const totalFromRows = sectors.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+                const totalInstitutions = (window.BMGF_DATA.kpis && Number(window.BMGF_DATA.kpis.total_institutions))
+                    ? Number(window.BMGF_DATA.kpis.total_institutions)
+                    : totalFromRows;
+                const percentages = sectors.map(s => {
+                    if (totalFromRows > 0) {
+                        return ((Number(s.value) || 0) * 100) / totalFromRows;
+                    }
+                    return Number(s.percentage) || 0;
+                });
+
+                return {
+                    labels: sectors.map(s => s.name),
+                    values: percentages,
+                    realValues: sectors.map(s => Number(s.value) || 0),
+                    colors: sectors.map((s, i) => getSectorColor(s.name, i)),
+                    total: totalInstitutions,
+                    totalLabel: 'Institutions'
+                };
+            }
+            return defaultConfig;
+        }
+
+        function buildConfigFromFiltered(filters, filteredData) {
+            const rows = Array.isArray(filteredData) ? filteredData : [];
+            if (rows.length === 0) return null;
+
+            const selectedSector = filters && filters.sector && filters.sector !== 'All'
+                ? String(filters.sector)
+                : '';
+
+            if (selectedSector) {
+                const institutions = rows.reduce((sum, item) => sum + (Number(item && item.institutions) || 0), 0);
+                if (institutions <= 0) return null;
+                return {
+                    labels: [selectedSector],
+                    values: [100],
+                    realValues: [institutions],
+                    colors: [getSectorColor(selectedSector, 0)],
+                    total: institutions,
+                    totalLabel: 'Institutions'
+                };
+            }
+
+            const sectorTotals = {};
+            rows.forEach(item => {
+                const breakdown = item && item.sector_breakdown ? item.sector_breakdown : {};
+                Object.keys(breakdown).forEach(name => {
+                    const institutions = Number((breakdown[name] || {}).institutions) || 0;
+                    if (institutions > 0) {
+                        sectorTotals[name] = (sectorTotals[name] || 0) + institutions;
+                    }
+                });
+            });
+
+            const totalInstitutions = Object.values(sectorTotals).reduce((sum, v) => sum + v, 0);
+            if (totalInstitutions <= 0) {
+                const filteredInstitutions = rows.reduce((sum, item) => sum + (Number(item && item.institutions) || 0), 0);
+                if (filteredInstitutions <= 0) return null;
+                return {
+                    labels: ['Filtered'],
+                    values: [100],
+                    realValues: [filteredInstitutions],
+                    colors: [getSectorColor('filtered', 0)],
+                    total: filteredInstitutions,
+                    totalLabel: 'Institutions'
+                };
+            }
+
+            const ordered = Object.entries(sectorTotals)
+                .sort((a, b) => b[1] - a[1])
+                .map(([name, value], idx) => ({
+                    name,
+                    value,
+                    percentage: (value * 100) / totalInstitutions,
+                    color: getSectorColor(name, idx)
+                }));
+
+            return {
+                labels: ordered.map(s => s.name),
+                values: ordered.map(s => s.percentage),
+                realValues: ordered.map(s => s.value),
+                colors: ordered.map(s => s.color),
+                total: totalInstitutions,
+                totalLabel: 'Institutions'
+            };
+        }
+
+        const svg = document.getElementById('radial-chart');
+        const legend = document.getElementById('legend');
+        const tooltip = document.getElementById('tooltip');
+        const cx = 100, cy = 100;
+        const startRadius = 50;
+        const barWidth = 14;
+        const gap = 6;
+        const emptyFilteredConfig = {
+            labels: ['Filtered'],
+            values: [100],
+            realValues: [0],
+            colors: [getSectorColor('filtered', 0)],
+            total: 0,
+            totalLabel: 'Institutions'
+        };
+
+        function hasActiveFilters(filters) {
+            if (!filters || typeof filters !== 'object') return false;
+            return Object.keys(filters).some(key => {
+                const value = filters[key];
+                return value !== undefined && value !== null && value !== '' && value !== 'All';
+            });
+        }
+
+        function render(config) {
+            if (!config || !Array.isArray(config.values) || config.values.length === 0) {
+                config = defaultConfig;
+            }
+
+            tooltip.classList.remove('visible');
+            svg.innerHTML = '';
+            legend.innerHTML = '';
+
+            const sortedData = config.values
+                .map((v, i) => ({ value: v, index: i }))
+                .sort((a, b) => b.value - a.value);
+
+            svg.innerHTML = `
+                <text x="${cx}" y="${cy - 2}" text-anchor="middle" class="center-text center-number">${Number(config.total || 0).toLocaleString()}</text>
+                <text x="${cx}" y="${cy + 16}" text-anchor="middle" class="center-label">${config.totalLabel}</text>
+            `;
+
+            const bars = [];
+            sortedData.forEach((item, sortIndex) => {
+                const radius = startRadius + sortIndex * (barWidth + gap);
+                const percent = item.value / 100;
+                const startAngle = 135;
+                const maxSweep = 270;
+                const endAngle = startAngle + (maxSweep * percent);
+
+                const track = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                track.setAttribute('d', describeArc(cx, cy, radius, startAngle, startAngle + maxSweep));
+                track.setAttribute('class', 'radial-track');
+                track.setAttribute('stroke-width', barWidth);
+                svg.appendChild(track);
+
+                const bar = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                bar.setAttribute('d', describeArc(cx, cy, radius, startAngle, startAngle));
+                bar.setAttribute('class', 'radial-bar');
+                bar.setAttribute('stroke', config.colors[item.index]);
+                bar.setAttribute('stroke-width', barWidth);
+                svg.appendChild(bar);
+
+                bars.push({ bar, item, radius, startAngle, endAngle });
+                setTimeout(() => {
+                    animateArc(bar, cx, cy, radius, startAngle, endAngle, 450);
+                }, sortIndex * 80);
+            });
+
+            setTimeout(() => {
+                bars.forEach(({ bar, item }) => {
+                    bar.addEventListener('mouseenter', () => {
+                        const institutions = Number(config.realValues[item.index] || 0).toLocaleString();
+                        tooltip.textContent = `${config.labels[item.index]}: ${institutions} institutions (${formatPercent(config.values[item.index])}%)`;
+                        tooltip.classList.add('visible');
+                    });
+                    bar.addEventListener('mousemove', (e) => {
+                        tooltip.style.left = (e.clientX + 10) + 'px';
+                        tooltip.style.top = (e.clientY - 30) + 'px';
+                    });
+                    bar.addEventListener('mouseleave', () => {
+                        tooltip.classList.remove('visible');
+                    });
+                });
+            }, 520);
+
+            sortedData.forEach((item, i) => {
+                const li = document.createElement('div');
+                li.className = 'legend-item';
+                li.innerHTML = `
+                    <span class="legend-dot" style="background: ${config.colors[item.index]}"></span>
+                    <span>${config.labels[item.index]}</span>
+                    <span class="legend-value">${formatPercent(config.values[item.index])}%</span>
+                `;
+                li.style.opacity = '0';
+                legend.appendChild(li);
+                setTimeout(() => {
+                    li.style.transition = 'opacity 0.3s ease';
+                    li.style.opacity = '1';
+                }, 260 + i * 60);
+            });
+        }
+
+        render(buildConfigFromDashboard());
+
+        window.handleFilterUpdate = function(filters, filteredData) {
+            const filteredConfig = buildConfigFromFiltered(filters || {}, filteredData || []);
+            if (filteredConfig) {
+                render(filteredConfig);
+                return;
+            }
+            if (hasActiveFilters(filters)) {
+                render(emptyFilteredConfig);
+                return;
+            }
+            render(buildConfigFromDashboard());
+        };
+
+        function describeArc(cx, cy, r, start, end) {
+            const s = polarToCartesian(cx, cy, r, start);
+            const e = polarToCartesian(cx, cy, r, end);
+            const largeArc = (end - start) > 180 ? 1 : 0;
+            return `M ${s.x} ${s.y} A ${r} ${r} 0 ${largeArc} 1 ${e.x} ${e.y}`;
+        }
+
+        function polarToCartesian(cx, cy, r, deg) {
+            const rad = (deg - 90) * Math.PI / 180;
+            return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+        }
+
+        function animateArc(el, cx, cy, r, start, end, dur) {
+            const t0 = performance.now();
+            function update(t) {
+                const p = Math.min((t - t0) / dur, 1);
+                const ease = 1 - Math.pow(1 - p, 3);
+                el.setAttribute('d', describeArc(cx, cy, r, start, start + (end - start) * ease));
+                if (p < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>

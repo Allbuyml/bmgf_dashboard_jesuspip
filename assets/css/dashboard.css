@@ -1,0 +1,45 @@
+/**
+ * BMGF Calculus Dashboard - WordPress Plugin Styles
+ * Additional styles for WordPress integration
+ */
+
+/* Reset WordPress default styles that might interfere */
+.bmgf-dashboard-container,
+.bmgf-dashboard-container * {
+    box-sizing: border-box;
+}
+
+.bmgf-dashboard-container img {
+    max-width: none;
+}
+
+.bmgf-dashboard-container a {
+    text-decoration: none;
+}
+
+.bmgf-dashboard-container button {
+    font-family: inherit;
+}
+
+/* Ensure iframes don't have extra spacing */
+.bmgf-dashboard-container iframe {
+    display: block;
+}
+
+/* Full width container option */
+.bmgf-dashboard-fullwidth {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    overflow-x: auto;
+}
+
+/* Responsive wrapper */
+.bmgf-dashboard-wrapper {
+    overflow-x: auto;
+}
+
+@media (max-width: 1280px) {
+    .bmgf-dashboard-wrapper {
+        padding: 0 20px;
+    }
+}

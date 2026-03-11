@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calc I vs Calc II Distribution</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --scholar-blue: #234A5D;
+            --warm-thoughts: #4A81A8;
+            --text-muted: #6B7280;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+        .radial-wrapper {
+            position: relative;
+            width: 260px;
+            height: 260px;
+        }
+        .radial-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+        .center-text {
+            font-family: 'Playfair Display', serif;
+            fill: var(--scholar-blue);
+        }
+        .center-number { font-size: 28px; font-weight: 600; }
+        .center-label {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px;
+            fill: var(--text-muted);
+        }
+        .radial-track {
+            fill: none;
+            stroke: #E8EAED;
+            stroke-linecap: round;
+        }
+        .radial-bar {
+            fill: none;
+            stroke-linecap: round;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            cursor: pointer;
+            transition: stroke-width 0.2s ease;
+        }
+        .radial-bar:hover {
+            stroke-width: 18px !important;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 20px;
+            margin-top: 5px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--scholar-blue);
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .legend-value {
+            font-weight: 700;
+            color: var(--deep-insight);
+        }
+        .tooltip {
+            position: fixed;
+            background: #234A5D;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 100;
+        }
+        .tooltip.visible { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="radial-wrapper">
+            <svg id="radial-chart" class="radial-svg" viewBox="-20 -20 240 240"></svg>
+        </div>
+        <div id="legend" class="legend"></div>
+    </div>
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        // Default configuration
+        const defaultConfig = {
+            labels: ['Calculus I', 'Calculus II'],
+            values: [66, 34],
+            realValues: ['1.19M', '615K'],
+            colors: ['#008384', '#4A81A8'],
+            total: '1.8M',
+            totalLabel: 'Calc Enroll'
+        };
+
+        function formatValue(val) {
+            if (val >= 1000000) return (val / 1000000).toFixed(2) + 'M';
+            if (val >= 1000) return Math.round(val / 1000) + 'K';
+            return val.toString();
+        }
+
+        function buildConfigFromKpis() {
+            if (window.BMGF_DATA && window.BMGF_DATA.kpis) {
+                const kpis = window.BMGF_DATA.kpis;
+                const calc1 = Number(kpis.calc1_enrollment) || 0;
+                const calc2 = Number(kpis.calc2_enrollment) || 0;
+                const total = calc1 + calc2;
+                const calc1Pct = total > 0 ? Math.round((calc1 / total) * 100) : 0;
+                const calc2Pct = total > 0 ? 100 - calc1Pct : 0;
+
+                return {
+                    labels: ['Calculus I', 'Calculus II'],
+                    values: [calc1Pct, calc2Pct],
+                    realValues: [formatValue(calc1), formatValue(calc2)],
+                    colors: ['#008384', '#4A81A8'],
+                    total: formatValue(total),
+                    totalLabel: 'Calc Enroll'
+                };
+            }
+            return defaultConfig;
+        }
+
+        function buildConfigFromFilteredData(filteredData) {
+            if (!filteredData || filteredData.length === 0) {
+                return null;
+            }
+
+            const calc1 = filteredData.reduce((sum, d) => sum + (d.calc_i || 0), 0);
+            const calc2 = filteredData.reduce((sum, d) => sum + (d.calc_ii || 0), 0);
+            const total = calc1 + calc2;
+
+            if (total === 0) {
+                return {
+                    labels: ['Calculus I', 'Calculus II'],
+                    values: [0, 0],
+                    realValues: ['0', '0'],
+                    colors: ['#008384', '#4A81A8'],
+                    total: '0',
+                    totalLabel: 'Calc Enroll'
+                };
+            }
+
+            const calc1Pct = Math.round((calc1 / total) * 100);
+            const calc2Pct = 100 - calc1Pct;
+
+            return {
+                labels: ['Calculus I', 'Calculus II'],
+                values: [calc1Pct, calc2Pct],
+                realValues: [formatValue(calc1), formatValue(calc2)],
+                colors: ['#008384', '#4A81A8'],
+                total: formatValue(total),
+                totalLabel: 'Calc Enroll'
+            };
+        }
+
+        const svg = document.getElementById('radial-chart');
+        const legend = document.getElementById('legend');
+        const tooltip = document.getElementById('tooltip');
+        const cx = 100, cy = 100;
+        const startRadius = 52;
+        const barWidth = 14;
+        const gap = 6;
+        const emptyFilteredConfig = {
+            labels: ['Calculus I', 'Calculus II'],
+            values: [0, 0],
+            realValues: ['0', '0'],
+            colors: ['#008384', '#4A81A8'],
+            total: '0',
+            totalLabel: 'Calc Enroll'
+        };
+
+        function hasActiveFilters(filters) {
+            if (!filters || typeof filters !== 'object') return false;
+            return Object.keys(filters).some(key => {
+                const value = filters[key];
+                return value !== undefined && value !== null && value !== '' && value !== 'All';
+            });
+        }
+
+        function renderChart(config) {
+            const sortedData = config.values
+                .map((v, i) => ({ value: v, index: i }))
+                .sort((a, b) => b.value - a.value);
+
+            svg.innerHTML = `
+                <text x="${cx}" y="${cy - 2}" text-anchor="middle" class="center-text center-number">${config.total}</text>
+                <text x="${cx}" y="${cy + 14}" text-anchor="middle" class="center-label">${config.totalLabel}</text>
+            `;
+            legend.innerHTML = '';
+
+            const bars = [];
+
+            sortedData.forEach((item, sortIndex) => {
+                const radius = startRadius + sortIndex * (barWidth + gap);
+                const percent = item.value / 100;
+                const startAngle = 135;
+                const maxSweep = 270;
+                const endAngle = startAngle + (maxSweep * percent);
+
+                const track = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                track.setAttribute('d', describeArc(cx, cy, radius, startAngle, startAngle + maxSweep));
+                track.setAttribute('class', 'radial-track');
+                track.setAttribute('stroke-width', barWidth);
+                svg.appendChild(track);
+
+                const bar = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                bar.setAttribute('d', describeArc(cx, cy, radius, startAngle, startAngle));
+                bar.setAttribute('class', 'radial-bar');
+                bar.setAttribute('stroke', config.colors[item.index]);
+                bar.setAttribute('stroke-width', barWidth);
+                svg.appendChild(bar);
+
+                bars.push({ bar, item, radius, startAngle, endAngle });
+
+                setTimeout(() => {
+                    animateArc(bar, cx, cy, radius, startAngle, endAngle, 600);
+                }, sortIndex * 120);
+            });
+
+            setTimeout(() => {
+                bars.forEach(({ bar, item }) => {
+                    bar.addEventListener('mouseenter', () => {
+                        tooltip.textContent = `${config.labels[item.index]}: ${config.realValues[item.index]} (${config.values[item.index]}%)`;
+                        tooltip.classList.add('visible');
+                    });
+                    bar.addEventListener('mousemove', (e) => {
+                        tooltip.style.left = (e.clientX + 10) + 'px';
+                        tooltip.style.top = (e.clientY - 30) + 'px';
+                    });
+                    bar.addEventListener('mouseleave', () => {
+                        tooltip.classList.remove('visible');
+                    });
+                });
+            }, 700);
+
+            sortedData.forEach((item, i) => {
+                const li = document.createElement('div');
+                li.className = 'legend-item';
+                li.innerHTML = `
+                    <span class="legend-dot" style="background: ${config.colors[item.index]}"></span>
+                    <span>${config.labels[item.index]}</span>
+                    <span class="legend-value">${config.values[item.index]}%</span>
+                `;
+                li.style.opacity = '0';
+                legend.appendChild(li);
+                setTimeout(() => {
+                    li.style.transition = 'opacity 0.3s ease';
+                    li.style.opacity = '1';
+                }, 400 + i * 60);
+            });
+        }
+
+        renderChart(buildConfigFromKpis());
+
+        function describeArc(cx, cy, r, start, end) {
+            const s = polarToCartesian(cx, cy, r, start);
+            const e = polarToCartesian(cx, cy, r, end);
+            const largeArc = (end - start) > 180 ? 1 : 0;
+            return `M ${s.x} ${s.y} A ${r} ${r} 0 ${largeArc} 1 ${e.x} ${e.y}`;
+        }
+
+        function polarToCartesian(cx, cy, r, deg) {
+            const rad = (deg - 90) * Math.PI / 180;
+            return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+        }
+
+        function animateArc(el, cx, cy, r, start, end, dur) {
+            const t0 = performance.now();
+            function update(t) {
+                const p = Math.min((t - t0) / dur, 1);
+                const ease = 1 - Math.pow(1 - p, 3);
+                el.setAttribute('d', describeArc(cx, cy, r, start, start + (end - start) * ease));
+                if (p < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        // Filter update handler
+        window.handleFilterUpdate = function(filters, filteredData) {
+            // Always prefer controller-provided filtered data so every filter
+            // (state/sector/region/publisher/course/period/etc.) is reflected.
+            if (!Array.isArray(filteredData)) {
+                if (hasActiveFilters(filters)) {
+                    renderChart(emptyFilteredConfig);
+                    return;
+                }
+                renderChart(buildConfigFromKpis());
+                return;
+            }
+
+            const filteredConfig = buildConfigFromFilteredData(filteredData);
+            if (filteredConfig) {
+                renderChart(filteredConfig);
+                return;
+            }
+            if (hasActiveFilters(filters)) {
+                renderChart(emptyFilteredConfig);
+                return;
+            }
+            renderChart(buildConfigFromKpis());
+        };
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>

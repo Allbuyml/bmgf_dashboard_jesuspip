@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cover Page - Calculus I Enrollment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --scholar-blue: #234A5D;
+            --coastal-clarity: #7FBFC0;
+            --warm-thoughts: #4A81A8;
+            --sky-logic: #4A81A8;
+            --soft-lecture: #92A4CF;
+            --lavender: #D3DEF6;
+            --white: #FFFFFF;
+            --background: #F6F6F6;
+            --text-dark: #234A5D;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: var(--white);
+            margin: 0;
+            padding: 0;
+        }
+
+        .section-container {
+            background: var(--white);
+            padding: 20px 24px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-group {
+            margin-bottom: 16px;
+        }
+
+        .chart-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .chart-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--scholar-blue);
+            margin-bottom: 12px;
+        }
+
+        .lollipop-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 4px 0;
+            border-radius: 4px;
+        }
+
+        .lollipop-row:hover {
+            background: rgba(193, 71, 41, 0.05);
+        }
+
+        .lollipop-row:hover .lollipop-circle {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px rgba(193, 71, 41, 0.15);
+        }
+
+        .lollipop-label {
+            width: 140px;
+            font-size: 11px;
+            color: var(--text-dark);
+            padding-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .lollipop-label .percentage {
+            color: var(--warm-thoughts);
+            font-weight: 600;
+        }
+
+        .lollipop-track {
+            flex: 1;
+            height: 2px;
+            background: var(--lavender);
+            position: relative;
+            margin-right: 8px;
+        }
+
+        .lollipop-line {
+            height: 2px;
+            background: var(--warm-thoughts);
+            position: absolute;
+            left: 0;
+            top: 0;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .lollipop-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--warm-thoughts);
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: -6px;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .lollipop-value {
+            width: 70px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dark);
+            text-align: right;
+        }
+
+        .sector-2year .lollipop-line,
+        .sector-2year .lollipop-circle {
+            background: var(--warm-thoughts);
+        }
+
+        .sector-4private .lollipop-line,
+        .sector-4private .lollipop-circle {
+            background: var(--sky-logic);
+        }
+
+        .sector-4public .lollipop-line,
+        .sector-4public .lollipop-circle {
+            background: var(--deep-insight);
+        }
+
+        .tooltip {
+            position: fixed;
+            background: var(--scholar-blue);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="section-container">
+        <!-- By Region -->
+        <div class="chart-group">
+            <div class="chart-label">By Region</div>
+            <div id="regionChart"></div>
+        </div>
+
+        <!-- By Sector -->
+        <div class="chart-group">
+            <div class="chart-label">By Sector</div>
+            <div id="sectorChart"></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Use dynamic data from admin panel if available, otherwise use defaults
+        const defaultRegionData = [
+            { name: 'Southeast', percentage: 29, value: 346181 },
+            { name: 'Far West', percentage: 19, value: 229591 },
+            { name: 'Mid East', percentage: 16, value: 193514 },
+            { name: 'Great Lakes', percentage: 13, value: 152706 },
+            { name: 'Southwest', percentage: 12, value: 138181 },
+            { name: 'Rocky Mountains', percentage: 6, value: 65814 },
+            { name: 'Plains', percentage: 3, value: 36024 },
+            { name: 'New England', percentage: 2, value: 25083 },
+            { name: 'Outlying Areas', percentage: 0, value: 825 }
+        ];
+
+        const defaultSectorData = [
+            { name: '4-Year Public', percentage: 70, value: 836560, class: 'sector-4public' },
+            { name: '2-Year Public', percentage: 17, value: 201591, class: 'sector-2year' },
+            { name: '4-Year Private', percentage: 12, value: 149768, class: 'sector-4private' }
+        ];
+
+        // Map sector names to CSS classes
+        const sectorClassMap = {
+            '4-Year Public': 'sector-4public',
+            '2-Year Public': 'sector-2year',
+            '4-Year Private': 'sector-4private'
+        };
+
+        // Get data from window.BMGF_DATA if available
+        const regionData = (window.BMGF_DATA && window.BMGF_DATA.regional && window.BMGF_DATA.regional.calc1)
+            ? window.BMGF_DATA.regional.calc1
+            : defaultRegionData;
+
+        const sectorData = (window.BMGF_DATA && window.BMGF_DATA.sectors && window.BMGF_DATA.sectors.calc1)
+            ? window.BMGF_DATA.sectors.calc1.map(s => ({ ...s, class: sectorClassMap[s.name] || '' }))
+            : defaultSectorData;
+
+        const tooltip = document.getElementById('tooltip');
+
+        function createLollipopChart(containerId, data, maxPercentage = null) {
+            const container = document.getElementById(containerId);
+            const max = maxPercentage || Math.max(...data.map(d => d.percentage));
+
+            data.forEach((item, index) => {
+                const width = (item.percentage / max) * 100;
+                const row = document.createElement('div');
+                row.className = `lollipop-row ${item.class || ''}`;
+
+                row.innerHTML = `
+                    <div class="lollipop-label">
+                        ${item.name} <span class="percentage">(${item.percentage}%)</span>
+                    </div>
+                    <div class="lollipop-track">
+                        <div class="lollipop-line" style="width: 0%">
+                            <div class="lollipop-circle"></div>
+                        </div>
+                    </div>
+                    <div class="lollipop-value">${item.value.toLocaleString()}</div>
+                `;
+
+                setTimeout(() => {
+                    const line = row.querySelector('.lollipop-line');
+                    line.style.width = width + '%';
+                }, 100 + index * 50);
+
+                row.addEventListener('mouseenter', (e) => {
+                    tooltip.innerHTML = `<strong>${item.name}</strong><br>${item.value.toLocaleString()} students (${item.percentage}%)`;
+                    tooltip.classList.add('show');
+                });
+
+                row.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = e.clientX + 10 + 'px';
+                    tooltip.style.top = e.clientY - 30 + 'px';
+                });
+
+                row.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('show');
+                });
+
+                container.appendChild(row);
+            });
+        }
+
+        createLollipopChart('regionChart', regionData, 30);
+        createLollipopChart('sectorChart', sectorData, 70);
+
+        // Filter update handler
+        window.handleFilterUpdate = function(filters, filteredData) {
+            if (!filteredData || filteredData.length === 0) return;
+
+            const stateToRegion = window.BMGF_STATE_TO_REGION || {};
+            const regionTotals = {};
+
+            filteredData.forEach(d => {
+                const region = stateToRegion[d.state];
+                if (region) {
+                    regionTotals[region] = (regionTotals[region] || 0) + (d.calc_i || 0);
+                }
+            });
+
+            const totalCalc1 = Object.values(regionTotals).reduce((s, v) => s + v, 0);
+            if (totalCalc1 === 0) return;
+
+            const newRegionData = Object.entries(regionTotals)
+                .map(([name, value]) => ({
+                    name: name,
+                    percentage: Math.round(value / totalCalc1 * 100),
+                    value: value
+                }))
+                .sort((a, b) => b.value - a.value);
+
+            // Clear and re-render region chart
+            const regionContainer = document.getElementById('regionChart');
+            regionContainer.innerHTML = '';
+            createLollipopChart('regionChart', newRegionData, Math.max(...newRegionData.map(d => d.percentage), 30));
+        };
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>

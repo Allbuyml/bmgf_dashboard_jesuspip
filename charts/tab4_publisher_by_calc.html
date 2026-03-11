@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publisher by Calc Level - Grouped Bar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --warm-thoughts: #4A81A8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        #chart {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="chart"></div>
+    <script>
+        const publishers = ['Cengage', 'Other', 'Pearson', 'Wiley', 'OpenStax', 'Macmillan'];
+        const calcI = [495, 282, 312, 139, 58, 37];
+        const calcII = [260, 81, 144, 79, 33, 35];
+
+        const trace1 = {
+            type: 'bar',
+            name: 'Calc I',
+            x: publishers,
+            y: calcI,
+            marker: { color: '#008384' },
+            text: calcI.map(v => v + 'K'),
+            textposition: 'auto',
+            textfont: { family: 'Inter Tight', size: 9, color: 'white' },
+            hovertemplate: '<b>%{x}</b><br>Calc I: %{y}K<extra></extra>'
+        };
+
+        const trace2 = {
+            type: 'bar',
+            name: 'Calc II',
+            x: publishers,
+            y: calcII,
+            marker: { color: '#4A81A8' },
+            text: calcII.map(v => v + 'K'),
+            textposition: 'auto',
+            textfont: { family: 'Inter Tight', size: 9, color: 'white' },
+            hovertemplate: '<b>%{x}</b><br>Calc II: %{y}K<extra></extra>'
+        };
+
+        const layout = {
+            margin: { l: 50, r: 20, t: 25, b: 80 },
+            barmode: 'group',
+            bargap: 0.25,
+            bargroupgap: 0.1,
+            xaxis: {
+                tickfont: { family: 'Inter Tight', size: 10, color: '#234A5D' },
+                tickangle: -25
+            },
+            yaxis: {
+                title: {
+                    text: 'Enrollment (K)',
+                    font: { family: 'Inter Tight', size: 11, color: '#6B7280' }
+                },
+                tickfont: { family: 'Inter Tight', size: 10, color: '#6B7280' },
+                gridcolor: '#E8EAED',
+                showline: false,
+                zeroline: false
+            },
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            showlegend: true,
+            legend: {
+                orientation: 'h',
+                x: 0.5,
+                xanchor: 'center',
+                y: -0.25,
+                font: { family: 'Inter Tight', size: 11, color: '#234A5D' }
+            }
+        };
+
+        const config = {
+            displayModeBar: false,
+            responsive: true
+        };
+
+        Plotly.newPlot('chart', [trace1, trace2], layout, config);
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>

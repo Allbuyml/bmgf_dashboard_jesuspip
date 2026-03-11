@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Enrollment Analysis - Calculus Market 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;1,400&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-insight: #008384;
+            --scholar-blue: #234A5D;
+            --coastal-clarity: #7FBFC0;
+            --warm-thoughts: #4A81A8;
+            --sky-logic: #4A81A8;
+            --soft-lecture: #92A4CF;
+            --lavender: #D3DEF6;
+            --white: #FFFFFF;
+            --background: #F6F6F6;
+            --text-dark: #234A5D;
+            --dark-blue: #244B5E;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: var(--background);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            overflow-y: hidden;
+        }
+
+        .frame {
+            width: 1280px;
+            height: 1440px;
+            margin: 0 auto;
+            position: relative;
+            background: var(--background);
+        }
+
+        .header {
+            position: absolute;
+            width: 1210px;
+            height: 79px;
+            left: 35px;
+            top: 23px;
+            background: var(--white);
+            box-shadow: 0px 0px 60px rgba(0, 131, 132, 0.23);
+            border-radius: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 19.37px;
+            padding: 8.72px 20px;
+            height: 53.27px;
+            border-radius: 96.86px;
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            line-height: 25px;
+            color: var(--scholar-blue);
+            background: transparent;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tab:hover { background: rgba(0, 131, 132, 0.1); }
+        .nav-tab.active { background: var(--deep-insight); color: white; }
+        .nav-tab svg { width: 25px; height: 25px; }
+
+        .logo-learnvia {
+            position: absolute;
+            width: 140px;
+            height: 43px;
+            left: 36px;
+            top: 148px;
+            object-fit: contain;
+        }
+
+        .kpi-card {
+            position: absolute;
+            width: 220px;
+            height: 95px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            top: 125px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .kpi-card.kpi-1 { left: 520px; background: var(--lavender); }
+        .kpi-card.kpi-2 { left: 760px; background: var(--white); }
+        .kpi-card.kpi-3 { left: 1000px; background: var(--dark-blue); color: white; }
+
+        .kpi-number {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 700;
+            font-size: 32px;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        .kpi-label {
+            font-weight: 500;
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        .filters-row {
+            position: absolute;
+            left: 35px;
+            top: 258px;
+            width: 1210px;
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            flex-wrap: nowrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--scholar-blue);
+        }
+
+        .filter-select {
+            height: 53px;
+            width: 165px;
+            min-width: 165px;
+            max-width: 165px;
+            padding: 0 40px 0 20px;
+            border: 2px solid transparent;
+            border-radius: 97px;
+            background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234A81A8' d='M2 4l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 20px center;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #AEAEAE;
+            cursor: pointer;
+            appearance: none;
+            transition: border-color 0.2s ease, color 0.2s ease;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--deep-insight);
+        }
+
+        .filter-select.active {
+            color: var(--scholar-blue);
+            border-color: var(--deep-insight);
+        }
+
+        .btn-clear {
+            height: 53px;
+            padding: 0 25px;
+            background: transparent;
+            border: 1px solid var(--dark-blue);
+            border-radius: 97px;
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--dark-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .actions-row {
+            position: absolute;
+            left: 35px;
+            top: 376px;
+            width: 1210px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            color: var(--scholar-blue);
+            pointer-events: none;
+        }
+
+        .search-input {
+            height: 48px;
+            width: 220px;
+            padding: 0 20px 0 44px;
+            background: var(--white);
+            border: 2px solid transparent;
+            border-radius: 97px;
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 14px;
+            color: var(--scholar-blue);
+            transition: border-color 0.2s ease, width 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--deep-insight);
+            width: 280px;
+        }
+
+        .search-input::placeholder {
+            color: #AEAEAE;
+        }
+
+        .period-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-period {
+            height: 53px;
+            padding: 0 30px;
+            border-radius: 97px;
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-period.active {
+            background: var(--sky-logic);
+            color: white;
+        }
+
+        .btn-period.inactive {
+            background: var(--white);
+            border: 1px solid var(--scholar-blue);
+            color: var(--scholar-blue);
+        }
+
+        .institution-list {
+            position: absolute;
+            width: 251px;
+            height: 340px;
+            left: 33px;
+            top: 474px;
+            overflow-y: auto;
+        }
+
+        .institution-list::-webkit-scrollbar { width: 5px; }
+        .institution-list::-webkit-scrollbar-track { background: #D9D9D9; border-radius: 100px; }
+        .institution-list::-webkit-scrollbar-thumb { background: var(--scholar-blue); border-radius: 100px; }
+
+        .institution-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            font-size: 16px;
+            color: var(--scholar-blue);
+            cursor: pointer;
+        }
+
+        .institution-item:first-child { font-weight: 600; }
+
+        .institution-item input[type="checkbox"] {
+            width: 21px;
+            height: 21px;
+            accent-color: var(--scholar-blue);
+        }
+
+        .chart-card-top {
+            position: absolute;
+            width: 434px;
+            height: 381px;
+            background: var(--white);
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .chart-card-top.left { left: 353px; top: 452px; }
+        .chart-card-top.right { left: 812px; top: 452px; }
+
+        .chart-title-top {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--scholar-blue);
+            text-align: center;
+            padding: 18px 15px 10px;
+        }
+
+        .chart-iframe-top {
+            width: 100%;
+            height: calc(100% - 55px);
+            border: none;
+            overflow: hidden;
+        }
+
+        .chart-card-bottom {
+            position: absolute;
+            width: 386px;
+            height: 509px;
+            background: var(--white);
+            border-radius: 32px;
+            overflow: hidden;
+            top: 873px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .chart-card-bottom.left { left: 36px; }
+        .chart-card-bottom.center { left: 448px; }
+        .chart-card-bottom.right { left: 860px; }
+
+        .chart-title-bottom {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--scholar-blue);
+            text-align: center;
+            padding: 20px 15px 10px;
+            line-height: 1.3;
+        }
+
+        .chart-iframe-bottom {
+            width: 100%;
+            height: calc(100% - 70px);
+            border: none;
+            overflow: hidden;
+        }
+
+        .footer {
+            position: absolute;
+            width: 1210px;
+            height: 49px;
+            left: 35px;
+            top: 1400px;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-text {
+            font-weight: 400;
+            font-size: 13px;
+            color: var(--scholar-blue);
+        }
+
+        .footer-line {
+            flex: 1;
+            height: 1px;
+            background: var(--scholar-blue);
+            margin: 0 15px 0 20px;
+        }
+
+        .footer-logo {
+            width: 180px;
+            height: 60px;
+            object-fit: contain;
+            margin-right: 0;
+        }
+        /* Header always visible, scrolls with content */
+
+        /* Hide header when in iframe (WordPress plugin handles navigation) */
+        .in-iframe .header {
+            display: none !important;
+        }
+        .in-iframe .frame {
+            padding-top: 0;
+        }
+        .in-iframe .logo-learnvia {
+            top: 23px;
+        }
+        .in-iframe .kpi-card {
+            top: 0;
+        }
+        .in-iframe .filters-row {
+            top: 133px;
+        }
+        .in-iframe .actions-row {
+            top: 251px;
+        }
+        .in-iframe .institution-list {
+            top: 349px;
+        }
+        .in-iframe .chart-card-top {
+            top: 327px;
+        }
+        .in-iframe .chart-card-bottom {
+            top: 748px;
+        }
+        .in-iframe .footer {
+            top: 1275px;
+        }
+        .in-iframe .frame {
+            height: 1315px;
+        }
+    </style>
+    <script>if(window.self!==window.top)document.documentElement.classList.add('in-iframe');</script>
+</head>
+<body>
+    <div class="frame">
+        <header class="header">
+            <a href="cover_page.html" class="nav-tab">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                    <path d="M9 22V12h6v10"/>
+                </svg>
+                Cover Page
+            </a>
+            <a href="tab2_enrollment_analysis.html" class="nav-tab active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+                Math Enrollment Analysis
+            </a>
+            <a href="tab3_institutions_analysis.html" class="nav-tab">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/>
+                </svg>
+                Institutions Analysis
+            </a>
+            <a href="tab4_textbook_analysis.html" class="nav-tab">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                </svg>
+                Textbook Analysis
+            </a>
+        </header>
+
+        <img class="logo-learnvia" src="../assets/Learnvia - principal logo.png" alt="Learnvia">
+
+        <div class="kpi-card kpi-1">
+            <div class="kpi-number" id="kpi-institutions">933</div>
+            <div class="kpi-label">Total Institutions</div>
+        </div>
+        <div class="kpi-card kpi-2">
+            <div class="kpi-number" id="kpi-fte">10,703,763</div>
+            <div class="kpi-label">Total FTE Enrollment</div>
+        </div>
+        <div class="kpi-card kpi-3">
+            <div class="kpi-number" id="kpi-calculus">1,817,722</div>
+            <div class="kpi-label">Total Calculus Enrollment</div>
+        </div>
+
+        <div class="filters-row">
+            <div class="filter-group">
+                <span class="filter-label">Course Name</span>
+                <select class="filter-select">
+                    <option>All</option>
+                    <option>Calc I</option>
+                    <option>Calc II</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">State</span>
+                <select class="filter-select">
+                    <option>All</option>
+                    <option>Florida</option>
+                    <option>California</option>
+                    <option>Texas</option>
+                    <option>New York</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Sector</span>
+                <select class="filter-select">
+                    <option>All</option>
+                    <option>4-Year Public</option>
+                    <option>2-Year Public</option>
+                    <option>4-Year Private</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Region</span>
+                <select class="filter-select">
+                    <option>All</option>
+                    <option>Southeast</option>
+                    <option>Far West</option>
+                    <option>Mid East</option>
+                    <option>Great Lakes</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Publisher</span>
+                <select class="filter-select">
+                    <option>All</option>
+                    <option>Cengage</option>
+                    <option>Pearson</option>
+                    <option>OpenStax</option>
+                    <option>Wiley</option>
+                </select>
+            </div>
+            <button class="btn-clear">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 4v6h6M23 20v-6h-6"/>
+                    <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/>
+                </svg>
+                Clear All
+            </button>
+        </div>
+
+        <div class="actions-row">
+            <div class="search-input-wrapper">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="2"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <input type="text" class="search-input" id="institution-search" placeholder="Search institution...">
+            </div>
+            <div class="period-buttons">
+                <button class="btn-period inactive" data-period="Fall 2025">Fall-25 Enrollment</button>
+                <button class="btn-period inactive" data-period="Spring 2025">Spring-25 Enrollment</button>
+                <button class="btn-period inactive" data-period="Winter 2025">Winter-25 Enrollment</button>
+            </div>
+        </div>
+
+        <div class="institution-list">
+            <label class="institution-item"><input type="checkbox" checked> (All)</label>
+            <label class="institution-item"><input type="checkbox"> Adelphi University</label>
+            <label class="institution-item"><input type="checkbox"> Alabama A & M University</label>
+            <label class="institution-item"><input type="checkbox"> Alabama State University</label>
+            <label class="institution-item"><input type="checkbox"> Albany State University</label>
+            <label class="institution-item"><input type="checkbox"> Alcorn State University</label>
+            <label class="institution-item"><input type="checkbox"> Allan Hancock College</label>
+            <label class="institution-item"><input type="checkbox"> Amarillo College</label>
+            <label class="institution-item"><input type="checkbox"> American River College</label>
+            <label class="institution-item"><input type="checkbox"> American University</label>
+        </div>
+
+        <div class="chart-card-top left">
+            <div class="chart-title-top">Calc I vs Calc II Breakdown</div>
+            <iframe class="chart-iframe-top" src="radial_calc_breakdown.html"></iframe>
+        </div>
+
+        <div class="chart-card-top right">
+            <div class="chart-title-top">Enrollment by Region</div>
+            <iframe class="chart-iframe-top" src="g7_compact.html"></iframe>
+        </div>
+
+        <div class="chart-card-bottom left">
+            <div class="chart-title-bottom">Top States<br>Comparison</div>
+            <iframe class="chart-iframe-bottom" src="g6_compact.html"></iframe>
+        </div>
+
+        <div class="chart-card-bottom center">
+            <div class="chart-title-bottom">Calc I vs Calc II<br>by Period</div>
+            <iframe class="chart-iframe-bottom" src="dumbbell_period.html"></iframe>
+        </div>
+
+        <div class="chart-card-bottom right">
+            <div class="chart-title-bottom">Calc I vs Calc II<br>by Institution Size</div>
+            <iframe class="chart-iframe-bottom" src="dumbbell_size.html"></iframe>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-text">Developed by Partner In Publishing</div>
+            <div class="footer-line"></div>
+            <img class="footer-logo" src="../assets/logo_pip.png" alt="Partner In Publishing">
+        </footer>
+    </div>
+
+    <!-- Load state data for filtering -->
+    <script src="state_data_updated.js"></script>
+    <!-- Load filter controller -->
+    <script src="filter-controller.js"></script>
+    <script>
+        // Update KPIs from dynamic data if available (fallback if filters don't apply)
+        (function() {
+            if (window.BMGF_DATA && window.BMGF_DATA.kpis) {
+                const kpis = window.BMGF_DATA.kpis;
+
+                // Total Institutions
+                const instEl = document.getElementById('kpi-institutions');
+                if (instEl && kpis.total_institutions !== undefined && kpis.total_institutions !== null) {
+                    instEl.textContent = Number(kpis.total_institutions).toLocaleString();
+                }
+
+                // Total Calculus Enrollment
+                const calcEl = document.getElementById('kpi-calculus');
+                if (calcEl && kpis.total_enrollment !== undefined && kpis.total_enrollment !== null) {
+                    calcEl.textContent = Number(kpis.total_enrollment).toLocaleString();
+                }
+
+                // Total FTE Enrollment
+                const fteEl = document.getElementById('kpi-fte');
+                if (fteEl && kpis.total_fte_enrollment !== undefined && kpis.total_fte_enrollment !== null) {
+                    fteEl.textContent = Number(kpis.total_fte_enrollment).toLocaleString();
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Institutions by Enrollment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            padding: 10px;
+        }
+        #chart { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="chart"></div>
+    </div>
+
+    <script>
+        // Default data
+        const defaultInstitutionData = [
+            { name: "Univ of Michigan", enrollment: 98 },
+            { name: "Univ of Florida", enrollment: 92 },
+            { name: "Florida State Univ", enrollment: 89 },
+            { name: "UCF", enrollment: 67 },
+            { name: "UT Dallas", enrollment: 57 },
+            { name: "Rutgers", enrollment: 46 },
+            { name: "Lone Star College", enrollment: 25 },
+            { name: "Oregon State", enrollment: 24 },
+            { name: "CU Boulder", enrollment: 24 },
+            { name: "Univ of Mississippi", enrollment: 23 }
+        ];
+
+        // Get data from window.BMGF_DATA if available
+        let institutionData;
+        if (window.BMGF_DATA && window.BMGF_DATA.topInstitutions && window.BMGF_DATA.topInstitutions.length > 0) {
+            institutionData = window.BMGF_DATA.topInstitutions.map(inst => ({
+                name: inst.name,
+                enrollment: Math.round(inst.enrollment / 1000) // Convert to K
+            }));
+        } else {
+            institutionData = defaultInstitutionData;
+        }
+
+        institutionData.reverse();
+
+        const trace = {
+            type: 'bar',
+            orientation: 'h',
+            y: institutionData.map(d => d.name),
+            x: institutionData.map(d => d.enrollment),
+            marker: {
+                color: institutionData.map((d, i) => {
+                    const idx = institutionData.length - 1 - i;
+                    return idx < 3 ? '#4A81A8' : '#92A4CF';
+                }),
+                line: { color: '#fff', width: 1 }
+            },
+            text: institutionData.map(d => d.enrollment + 'K'),
+            textposition: 'outside',
+            textfont: { family: 'Inter Tight', size: 9, color: '#234A5D' },
+            hovertemplate: '<b>%{y}</b><br>%{x}K enrollment<extra></extra>'
+        };
+
+        const layout = {
+            margin: { l: 100, r: 40, t: 10, b: 30 },
+            xaxis: {
+                showgrid: true,
+                gridcolor: '#F0F2F5',
+                zeroline: false,
+                tickfont: { family: 'Inter Tight', size: 9, color: '#9CA3AF' }
+            },
+            yaxis: {
+                tickfont: { family: 'Inter Tight', size: 9, color: '#234A5D' },
+                showgrid: false
+            },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            bargap: 0.25
+        };
+
+        const config = { displayModeBar: false, responsive: true };
+
+        Plotly.newPlot('chart', [trace], layout, config);
+    </script>
+    <script src="filter-receiver.js"></script>
+</body>
+</html>
