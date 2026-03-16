@@ -208,11 +208,11 @@ class BMGF_Calculus_Dashboard {
                 body, text, tspan, div, span, p, h1, h2, h3, h4, h5, h6, a, button, input, select, textarea {
                     font-family: "%s", sans-serif !important;
                 }
-                .kpi-number { color: var(--deep-insight) !important; }
-                .kpi-card { background: var(--white) !important; border-color: var(--lavender) !important; }
-                .kpi-card.dark { background: var(--dark-blue) !important; color: white !important; }
-                .kpi-card.dark .kpi-number, .kpi-card.dark .kpi-label { color: white !important; }
-                .kpi-card.highlight { background: var(--lavender) !important; }
+                .kpi-number { color: var(--deep-insight) ; }
+                .kpi-card { background: var(--white) ; border-color: var(--lavender); }
+                .kpi-card.dark { background: var(--dark-blue) ; color: white ; }
+                .kpi-card.dark .kpi-number, .kpi-card.dark .kpi-label { color: white ; }
+                .kpi-card.highlight { background: var(--lavender) ; }
             </style>',
             esc_attr($branding['primary_color'] ?? '#008384'),     // --deep-insight
             esc_attr($branding['secondary_color'] ?? '#234A5D'),   // --scholar-blue
@@ -676,7 +676,7 @@ HTML;
                     --background: #F6F6F6;
                     --text-dark: <?php echo esc_attr($branding['secondary_color'] ?? '#234A5D'); ?>;
                     --dark-blue: <?php echo esc_attr($branding['secondary_color'] ?? '#244B5E'); ?>;
-                    font-family: '<?php echo esc_attr($branding['font_family'] ?? 'Inter Tight'); ?>', sans-serif !important;
+                    font-family: '<?php echo esc_attr($branding['font_family'] ?? 'Raleway'); ?>', sans-serif !important;
                     background: var(--background);
                     color: var(--text-dark);
                 }
@@ -705,7 +705,7 @@ HTML;
                     box-shadow: 0px 0px 60px rgba(0, 131, 132, 0.23);
                     border-radius: 100px;
                     display: flex;
-                    justify-content: center;
+                    justify-content: space-around;
                     align-items: center;
                     gap: 20px;
                     z-index: 100;
@@ -742,6 +742,11 @@ HTML;
                 .bmgf-nav-tab svg {
                     width: 25px;
                     height: 25px;
+                    fill:black;
+                }
+
+                .active svg{
+                    fill:white;
                 }
 
                 .bmgf-hero-section {
@@ -752,6 +757,7 @@ HTML;
                     top: 138px;
                     background: radial-gradient(46.73% 153.31% at 97.68% 123.41%, rgba(0, 128, 130, 0.11) 0%, #FFFFFF 100%);
                     border-radius: 23px;
+                    background-image: url("<?php echo esc_url($plugin_url . 'assets/bg-hero.png'); ?>");
                     overflow: visible;
                 }
 
@@ -770,7 +776,7 @@ HTML;
                     width: 575px;
                     left: 58px;
                     top: 85px;
-                    font-weight: 700;
+                    font-weight: 300;
                     font-size: 55px;
                     line-height: 55px;
                     letter-spacing: 0;
@@ -785,9 +791,8 @@ HTML;
                 }
 
                 .bmgf-hero-title .highlight {
-                    font-family: 'Playfair Display', serif !important;
-                    font-weight: 400;
-                    font-style: italic;
+                    font-family: 'Raleway', serif !important;
+                    font-weight: 800;
                     color: var(--sky-logic);
                 }
 
@@ -846,10 +851,10 @@ HTML;
                     text-align: center;
                 }
 
-                .bmgf-kpi-card.lavender { background: var(--lavender); color: var(--text-dark); }
-                .bmgf-kpi-card.white { background: #FFFFFF; color: var(--text-dark); }
-                .bmgf-kpi-card.dark { background: var(--dark-blue); color: white; }
-                .bmgf-kpi-card.teal { background: var(--coastal-clarity); color: var(--text-dark); }
+                .bmgf-kpi-card.lavender, .kpi-card.kpi-3 { background: var(--lavender) !important; color: var(--text-dark); }
+                .bmgf-kpi-card.white , .kpi-card.kpi-2{ background: #FFFFFF !important; color: var(--text-dark); }
+                .bmgf-kpi-card.dark { background: var(--sky-logic) !important; color: white; }
+                .bmgf-kpi-card.teal, .kpi-card.kpi-1 { background: var(--coastal-clarity) !important; color: var(--text-dark); }
 
                 .bmgf-chart-card {
                     position: absolute;
@@ -878,25 +883,30 @@ HTML;
                     border-bottom: 2px solid var(--lavender);
                 }
 
+                .left .bmgf-chart-card-header{
+                    background:  var(--sky-logic);
+                }
+                .right .bmgf-chart-card-header{
+                    background: var(--coastal-clarity);
+                }
+
                 .bmgf-chart-card-icon {
                     width: 40px;
                     height: 40px;
-                    border-radius: 10px;
+                    border-radius: 50px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     font-weight: 700;
                     font-size: 16px;
-                    color: white;
+                    color: black;
+                    background: white;
                 }
-
-                .bmgf-chart-card-icon.calc1 { background: var(--deep-insight); }
-                .bmgf-chart-card-icon.calc2 { background: var(--sky-logic); }
 
                 .bmgf-chart-card-title {
                     font-size: 16px;
                     font-weight: 600;
-                    color: var(--scholar-blue);
+                    color: white;
                 }
 
                 .bmgf-chart-iframe {
@@ -966,38 +976,103 @@ HTML;
                         transform-origin: top center;
                     }
                 }
+                
+                /* Loader Styles */
+                .bmgf-loader-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: var(--background);
+                    z-index: 9999;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    border-radius: 30px;
+                }
+                .bmgf-loader-spinner {
+                    border: 8px solid var(--lavender);
+                    border-top: 8px solid var(--deep-insight);
+                    border-radius: 50%;
+                    margin-top: calc(20%);
+                    width: 60px;
+                    height: 60px;
+                    animation: bmgf-spin 1s linear infinite;
+                }
+                @keyframes bmgf-spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                .bmgf-loader-text {
+                    margin-top: 20px;
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: var(--scholar-blue);
+                }
             </style>
 
             <div class="bmgf-frame">
+                <div id="bmgf-loader" class="bmgf-loader-overlay">
+                    <div class="bmgf-loader-spinner"></div>
+                    <div class="bmgf-loader-text">Loading Dashboard Data...</div>
+                </div>
+
                 <header class="bmgf-header">
                     <button class="bmgf-nav-tab active" data-tab="cover" onclick="bmgfSwitchTab('cover')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9.02 2.84L3.63 7.04c-.78.62-1.28 1.93-1.11 2.91l1.33 7.96c.24 1.42 1.6 2.57 3.04 2.57h11.22c1.43 0 2.8-1.16 3.04-2.57l1.33-7.96c.16-.98-.34-2.29-1.11-2.91l-5.39-4.2c-1.08-.84-2.84-.84-3.96.01z"/>
-                            <path d="M12 15.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/>
+                        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16.7969 5.80469C16.7969 6.28672 17.1734 6.66406 17.6562 6.66406H21.8906V6.42969C21.8906 5.80469 21.6484 5.21094 21.2031 4.77344L18.6797 2.25C18.2422 1.80469 17.6484 1.5625 17.0234 1.5625H16.7969V5.80469Z" fill="white"/>
+                        <path d="M17.6563 8.07031C16.4063 8.07031 15.3906 7.05469 15.3906 5.80469V1.5625H5.45312C4.15625 1.5625 3.10938 2.60938 3.10938 3.90625V21.0938C3.10938 22.3906 4.15625 23.4375 5.45312 23.4375H19.5469C20.8438 23.4375 21.8906 22.3906 21.8906 21.1016V8.07031H17.6563ZM17.4516 19.9383H15.0703C14.682 19.9383 14.3672 19.6234 14.3672 19.2352C14.3672 18.8469 14.682 18.532 15.0703 18.532H17.4516C17.8398 18.532 18.1547 18.8469 18.1547 19.2352C18.1547 19.6234 17.8398 19.9383 17.4516 19.9383ZM17.4516 15.1898H7.54844C7.16016 15.1898 6.84531 14.875 6.84531 14.4867C6.84531 14.0984 7.16016 13.7836 7.54844 13.7836H17.4516C17.8398 13.7836 18.1547 14.0984 18.1547 14.4867C18.1547 14.875 17.8398 15.1898 17.4516 15.1898ZM17.4516 12.2758H7.54844C7.16016 12.2758 6.84531 11.9609 6.84531 11.5727C6.84531 11.1844 7.16016 10.8695 7.54844 10.8695H17.4516C17.8398 10.8695 18.1547 11.1844 18.1547 11.5727C18.1547 11.9609 17.8398 12.2758 17.4516 12.2758Z" />
                         </svg>
                         Cover Page
                     </button>
                     <button class="bmgf-nav-tab" data-tab="enrollment" onclick="bmgfSwitchTab('enrollment')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9.16 10.87c-.1-.01-.22-.01-.33 0a4.42 4.42 0 01-4.27-4.43C4.56 3.99 6.54 2 9 2a4.435 4.435 0 01.16 8.87zM16.41 4c1.94 0 3.5 1.57 3.5 3.5 0 1.89-1.5 3.43-3.37 3.5a1.13 1.13 0 00-.26 0M4.16 14.56c-2.42 1.62-2.42 4.26 0 5.87 2.75 1.84 7.26 1.84 10.01 0 2.42-1.62 2.42-4.26 0-5.87-2.74-1.83-7.25-1.83-10.01 0zM18.34 20c.72-.15 1.4-.44 1.96-.87 1.56-1.17 1.56-3.1 0-4.27-.55-.42-1.22-.7-1.93-.86"/>
+                        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.9792 12.7604C15.1433 12.7604 17.7083 10.1954 17.7083 7.03125C17.7083 3.86712 15.1433 1.30208 11.9792 1.30208C8.81504 1.30208 6.25 3.86712 6.25 7.03125C6.25 10.1954 8.81504 12.7604 11.9792 12.7604Z" />
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.4698 22.6687C12.3833 21.5062 11.7188 19.9448 11.7188 18.2292C11.7188 16.4781 12.4115 14.8885 13.5365 13.7177C13.0292 13.6792 12.5083 13.6583 11.9792 13.6583C8.51876 13.6583 5.45522 14.524 3.55314 15.8208C2.10209 16.8104 1.30209 18.0677 1.30209 19.3875V20.899C1.30209 21.3677 1.48855 21.8187 1.82084 22.151C2.15314 22.4823 2.60314 22.6698 3.07293 22.6698L13.4698 22.6687Z" />
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M18.2292 12.7604C15.2104 12.7604 12.7604 15.2104 12.7604 18.2292C12.7604 21.2479 15.2104 23.6979 18.2292 23.6979C21.2479 23.6979 23.6979 21.2479 23.6979 18.2292C23.6979 15.2104 21.2479 12.7604 18.2292 12.7604ZM19.0104 17.4479V16.4063C19.0104 15.975 18.6604 15.625 18.2292 15.625C17.7979 15.625 17.4479 15.975 17.4479 16.4063V17.4479H16.4063C15.975 17.4479 15.625 17.7979 15.625 18.2292C15.625 18.6604 15.975 19.0104 16.4063 19.0104H17.4479V20.0521C17.4479 20.4833 17.7979 20.8333 18.2292 20.8333C18.6604 20.8333 19.0104 20.4833 19.0104 20.0521V19.0104H20.0521C20.4834 19.0104 20.8334 18.6604 20.8334 18.2292C20.8334 17.7979 20.4834 17.4479 20.0521 17.4479H19.0104Z" />
                         </svg>
                         Student Enrollment Analysis
                     </button>
                     <button class="bmgf-nav-tab" data-tab="institutions" onclick="bmgfSwitchTab('institutions')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/>
+                        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_120_167)">
+                                <path
+                                    d="M17.0555 0.351549H13.0956C12.91 0.0195176 12.495 -0.0976698 12.1678 0.087877C11.953 0.205065 11.8163 0.434557 11.8163 0.68358V4.58495L7.82214 6.94823C7.49011 7.14354 7.28503 7.50487 7.28503 7.89061V22.4072H9.35535V16.0791C9.35535 15.3027 9.98523 14.6728 10.7665 14.6728H14.243C15.0194 14.6728 15.6493 15.3027 15.6493 16.0791V22.4072H17.7196V7.89061C17.7196 7.50487 17.5145 7.14354 17.1825 6.94823L13.1835 4.58495V3.72069H17.0555C17.4218 3.72069 17.7147 3.42772 17.7147 3.06151V1.01073C17.7147 0.649401 17.4218 0.351549 17.0555 0.351549ZM14.326 8.99901C14.326 10.0049 13.5106 10.8252 12.4999 10.8252C11.4891 10.8252 10.6737 10.0098 10.6737 8.99901C10.6737 7.98827 11.4891 7.17284 12.4999 7.17284C13.5106 7.17284 14.326 7.99315 14.326 8.99901Z"
+                                     />
+                                <path
+                                    d="M0.7323 14.6045V23.9014C0.7323 24.5068 1.22546 25 1.83093 25H6.47937V12.2217L1.54773 13.5498C1.06433 13.6767 0.7323 14.1113 0.7323 14.6045ZM2.44128 15.6592C2.44128 15.3711 2.67566 15.1367 2.96375 15.1367H4.67273C4.96082 15.1367 5.19519 15.3711 5.19519 15.6592V17.373C5.19519 17.6611 4.96082 17.8955 4.67273 17.8955H2.96375C2.67566 17.8955 2.44128 17.6611 2.44128 17.373V15.6592ZM2.44128 20.2978C2.44128 20.0098 2.67566 19.7754 2.96375 19.7754H4.67273C4.96082 19.7754 5.19519 20.0098 5.19519 20.2978V22.0117C5.19519 22.2998 4.96082 22.5342 4.67273 22.5342H2.96375C2.67566 22.5342 2.44128 22.2998 2.44128 22.0117C2.44128 22.0117 2.44128 22.0117 2.44128 22.0068V20.2978Z"
+                                     />
+                                <path
+                                    d="M23.457 13.5449L18.5253 12.2168V25H23.1738C23.7792 25 24.2675 24.5068 24.2675 23.9014V14.6045C24.2675 14.1113 23.9355 13.6767 23.457 13.5449ZM22.5585 22.0068C22.5585 22.2949 22.3242 22.5293 22.0361 22.5293H20.3271C20.039 22.5293 19.8046 22.2949 19.8046 22.0068V20.293C19.8046 20.0049 20.039 19.7705 20.3271 19.7705H22.0361C22.3242 19.7705 22.5585 20.0049 22.5585 20.293V22.0068ZM22.5585 17.3682C22.5585 17.6562 22.3242 17.8906 22.0361 17.8906H20.3271C20.039 17.8906 19.8046 17.6562 19.8046 17.3682V15.6592C19.8046 15.3711 20.039 15.1367 20.3271 15.1367H22.0361C22.3242 15.1367 22.5585 15.3711 22.5585 15.6592V17.3682Z"
+                                     />
+                                <path d="M7.28503 23.2129H17.7196V25H7.28503V23.2129Z"  />
+                                <path
+                                    d="M14.2382 15.4785H10.7617C10.4296 15.4785 10.1611 15.7471 10.1611 16.0791V22.4072H14.8437V16.0791C14.8388 15.7471 14.5703 15.4785 14.2382 15.4785Z"
+                                     />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_120_167">
+                                    <rect width="25" height="25" />
+                                </clipPath>
+                            </defs>
                         </svg>
                         Institutions Analysis
                     </button>
                     <button class="bmgf-nav-tab" data-tab="textbooks" onclick="bmgfSwitchTab('textbooks')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 16.74V4.67c0-1.2-.98-2.09-2.17-1.99h-.06c-2.1.18-5.29 1.25-7.07 2.37l-.17.11c-.29.18-.77.18-1.06 0l-.25-.15C9.44 3.9 6.26 2.84 4.16 2.67 2.97 2.57 2 3.47 2 4.66v12.08c0 .96.78 1.86 1.74 1.98l.29.04c2.17.29 5.52 1.39 7.44 2.44l.04.02c.27.15.7.15.96 0 1.92-1.06 5.28-2.17 7.46-2.46l.33-.04c.96-.12 1.74-1.02 1.74-1.98zM12 5.49v15M7.75 8.49H5.5M8.5 11.49h-3"/>
+                        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M6.85129 4.57127C5.80221 4.31673 4.79163 5.11142 4.79163 6.19094V15.8161C4.79163 16.5531 5.27573 17.2026 5.98202 17.4133L12.0833 19.2326V5.84075L6.85129 4.57127ZM7.17717 8.52565C6.9559 8.46242 6.82777 8.23181 6.891 8.01054C6.95421 7.78927 7.18483 7.66115 7.40608 7.72438L10.3228 8.55771C10.544 8.62092 10.6721 8.85154 10.6089 9.07281C10.5457 9.29406 10.3151 9.42219 10.0938 9.35898L7.17717 8.52565ZM6.891 10.9272C6.82777 11.1485 6.9559 11.3791 7.17717 11.4423L10.0938 12.2756C10.3151 12.3389 10.5457 12.2107 10.6089 11.9895C10.6721 11.7682 10.544 11.5376 10.3228 11.4744L7.40608 10.641C7.18483 10.5778 6.95421 10.7059 6.891 10.9272ZM7.17717 14.359C6.9559 14.2958 6.82777 14.0651 6.891 13.8439C6.95421 13.6226 7.18483 13.4945 7.40608 13.5577L10.3228 14.391C10.544 14.4543 10.6721 14.6849 10.6089 14.9061C10.5457 15.1274 10.3151 15.2555 10.0938 15.1923L7.17717 14.359Z" />
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12.9166 5.84075V19.2326L19.0179 17.4133C19.7242 17.2026 20.2083 16.5531 20.2083 15.8161V6.19094C20.2083 5.11142 19.1977 4.31673 18.1486 4.57127L12.9166 5.84075ZM18.1089 8.01054C18.1721 8.23181 18.044 8.46242 17.8228 8.52565L14.9061 9.35898C14.6848 9.42219 14.4542 9.29406 14.391 9.07281C14.3278 8.85154 14.4559 8.62092 14.6772 8.55771L17.5938 7.72438C17.8151 7.66115 18.0457 7.78927 18.1089 8.01054ZM17.8228 11.4423C18.044 11.3791 18.1721 11.1485 18.1089 10.9272C18.0457 10.7059 17.8151 10.5778 17.5938 10.641L14.6772 11.4744C14.4559 11.5376 14.3278 11.7682 14.391 11.9895C14.4542 12.2107 14.6848 12.3389 14.9061 12.2756L17.8228 11.4423ZM18.1089 13.8439C18.1721 14.0651 18.044 14.2958 17.8228 14.359L14.9061 15.1923C14.6848 15.2555 14.4542 15.1274 14.391 14.9061C14.3278 14.6849 14.4559 14.4543 14.6772 14.391L17.5938 13.5577C17.8151 13.4945 18.0457 13.6226 18.1089 13.8439Z" />
+                            <path d="M5.74392 18.2119L12.0833 20.1022V20.7786L3.6169 19.7313C2.73894 19.6227 2.08331 18.882 2.08331 18.0076V8.61238C2.08331 7.60104 2.94973 6.80675 3.95831 6.87971V15.8161C3.95831 16.9216 4.68446 17.8959 5.74392 18.2119Z" />
+                            <path d="M21.3831 19.7313L12.9166 20.7786V20.1022L19.256 18.2119C20.3155 17.8959 21.0416 16.9216 21.0416 15.8161V6.87971C22.0502 6.80675 22.9166 7.60104 22.9166 8.61238V18.0076C22.9166 18.882 22.261 19.6227 21.3831 19.7313Z" />
                         </svg>
                         Textbook Analysis
                     </button>
                 </header>
 
-                <iframe id="bmgf-tab-iframe" class="bmgf-tab-iframe" style="display:none;" title="Dashboard Content"></iframe>
+                <iframe id="bmgf-iframe-enrollment" class="bmgf-tab-iframe" src="<?php echo esc_url($charts_url . 'tab2_enrollment_analysis.html' . $charts_version_query); ?>" style="display:none;" title="Student Enrollment Analysis"></iframe>
+                <iframe id="bmgf-iframe-institutions" class="bmgf-tab-iframe" src="<?php echo esc_url($charts_url . 'tab3_institutions_analysis.html' . $charts_version_query); ?>" style="display:none;" title="Institutions Analysis"></iframe>
+                <iframe id="bmgf-iframe-textbooks" class="bmgf-tab-iframe" src="<?php echo esc_url($charts_url . 'tab4_textbook_analysis.html' . $charts_version_query); ?>" style="display:none;" title="Textbook Analysis"></iframe>
 
                 <div id="bmgf-cover-content">
                 <section class="bmgf-hero-section">
@@ -1006,21 +1081,21 @@ HTML;
                         <span class="normal"><?php echo esc_html($branding['dashboard_title_line1'] ?? 'Math Education'); ?></span><br>
                         <span class="highlight"><?php echo esc_html($branding['dashboard_title_line2_highlight'] ?? 'Market'); ?></span> <span class="normal"><?php echo esc_html($branding['dashboard_title_line2_normal'] ?? 'Analysis'); ?></span>
                     </h1>
-                    <div class="bmgf-laptop-container">
+                    <div class="bmgf-laptop-container" style="display:none;">
                         <img class="bmgf-laptop-image" src="<?php echo esc_url($plugin_url . 'assets/ordenador_cover_page.png'); ?>" alt="Math Education Analysis">
                     </div>
                 </section>
 
                 <div class="bmgf-kpi-row">
-                    <div class="bmgf-kpi-card white">
+                    <div class="bmgf-kpi-card lavender">
                         <div class="bmgf-kpi-number"><?php echo esc_html(number_format($kpis['total_institutions'])); ?></div>
                         <div class="bmgf-kpi-label">Total Institutions</div>
                     </div>
-                    <div class="bmgf-kpi-card dark">
+                    <div class="bmgf-kpi-card white">
                         <div class="bmgf-kpi-number"><?php echo esc_html(number_format($kpis['total_enrollment'])); ?></div>
                         <div class="bmgf-kpi-label">Total Calculus Enrollment</div>
                     </div>
-                    <div class="bmgf-kpi-card lavender">
+                    <div class="bmgf-kpi-card dark">
                         <div class="bmgf-kpi-number"><?php echo esc_html(number_format($kpis['calc1_enrollment'])); ?></div>
                         <div class="bmgf-kpi-label">Calculus I Enrollment</div>
                     </div>
@@ -1068,34 +1143,67 @@ HTML;
 
             <script>
             (function() {
-                var chartsUrl = <?php echo json_encode($charts_url); ?>;
-                var chartsVersionQuery = <?php echo json_encode($charts_version_query); ?>;
-                var tabUrls = {
-                    'cover': null,
-                    'enrollment': chartsUrl + 'tab2_enrollment_analysis.html' + chartsVersionQuery,
-                    'institutions': chartsUrl + 'tab3_institutions_analysis.html' + chartsVersionQuery,
-                    'textbooks': chartsUrl + 'tab4_textbook_analysis.html' + chartsVersionQuery
+                var iframes = {
+                    'enrollment': document.getElementById('bmgf-iframe-enrollment'),
+                    'institutions': document.getElementById('bmgf-iframe-institutions'),
+                    'textbooks': document.getElementById('bmgf-iframe-textbooks')
                 };
-                var tabIframe = document.getElementById('bmgf-tab-iframe');
+                
+                var coverIframes = document.querySelectorAll('#bmgf-cover-content iframe');
+                var loader = document.getElementById('bmgf-loader');
                 var frame = document.querySelector('.bmgf-frame');
                 var iframeTopOffset = 125;
                 var frameBottomPadding = 30;
                 var coverFrameHeight = 1880;
+                
+                // Track load progress to dismiss loader
+                var totalFrames = 3 + coverIframes.length;
+                var loadedFrames = 0;
 
-                function bmgfResizeTabIframe() {
-                    if (!tabIframe || tabIframe.style.display === 'none') {
+                function frameLoaded() {
+                    loadedFrames++;
+                    if (loadedFrames >= totalFrames) {
+                        loader.style.opacity = '0';
+                        setTimeout(function() { loader.style.display = 'none'; }, 300); // fade out effect
+                    }
+                }
+
+                // Attach load events
+                Object.values(iframes).forEach(function(iframe) {
+                    if (iframe) {
+                        iframe.addEventListener('load', function() {
+                            bmgfResizeTabIframe(iframe);
+                            frameLoaded();
+                            // Retry resizing in case internal content renders slightly later
+                            setTimeout(function(){ bmgfResizeTabIframe(iframe); }, 150);
+                            setTimeout(function(){ bmgfResizeTabIframe(iframe); }, 500);
+                            setTimeout(function(){ bmgfResizeTabIframe(iframe); }, 1200);
+                        });
+                    }
+                });
+
+                coverIframes.forEach(function(iframe) {
+                    iframe.addEventListener('load', frameLoaded);
+                });
+
+                // Safety fallback: dismiss loader anyway after 8 seconds 
+                setTimeout(function() {
+                    if (loader) {
+                        loader.style.opacity = '0';
+                        setTimeout(function() { loader.style.display = 'none'; }, 300);
+                    }
+                }, 8000);
+
+                function bmgfResizeTabIframe(targetIframe) {
+                    if (!targetIframe || targetIframe.style.display === 'none') {
                         return;
                     }
                     try {
-                        var iframeDoc = tabIframe.contentDocument || (tabIframe.contentWindow && tabIframe.contentWindow.document);
-                        if (!iframeDoc) {
-                            return;
-                        }
+                        var iframeDoc = targetIframe.contentDocument || (targetIframe.contentWindow && targetIframe.contentWindow.document);
+                        if (!iframeDoc) return;
                         var body = iframeDoc.body;
                         var html = iframeDoc.documentElement;
-                        if (!body || !html) {
-                            return;
-                        }
+                        if (!body || !html) return;
                         var contentHeight = Math.max(
                             body.scrollHeight,
                             body.offsetHeight,
@@ -1104,7 +1212,7 @@ HTML;
                             html.offsetHeight
                         );
                         if (contentHeight > 0) {
-                            tabIframe.style.height = contentHeight + 'px';
+                            targetIframe.style.height = contentHeight + 'px';
                             if (frame) {
                                 frame.style.height = (iframeTopOffset + contentHeight + frameBottomPadding) + 'px';
                             }
@@ -1112,15 +1220,12 @@ HTML;
                     } catch (e) { }
                 }
 
-                if (tabIframe) {
-                    tabIframe.addEventListener('load', function() {
-                        bmgfResizeTabIframe();
-                        setTimeout(bmgfResizeTabIframe, 150);
-                        setTimeout(bmgfResizeTabIframe, 500);
-                        setTimeout(bmgfResizeTabIframe, 1200);
-                    });
-                }
-                window.addEventListener('resize', bmgfResizeTabIframe);
+                window.addEventListener('resize', function() {
+                    var activeTab = document.querySelector('.bmgf-nav-tab.active').getAttribute('data-tab');
+                    if (activeTab !== 'cover' && iframes[activeTab]) {
+                        bmgfResizeTabIframe(iframes[activeTab]);
+                    }
+                });
 
                 window.bmgfSwitchTab = function(tab) {
                     var coverContent = document.getElementById('bmgf-cover-content');
@@ -1133,18 +1238,25 @@ HTML;
                         }
                     });
 
+                    // Hide all iframes
+                    Object.values(iframes).forEach(function(iframe) {
+                        if (iframe) iframe.style.display = 'none';
+                    });
+
                     if (tab === 'cover') {
                         coverContent.style.display = 'block';
-                        tabIframe.style.display = 'none';
-                        tabIframe.src = '';
                         if (frame) {
                             frame.style.height = coverFrameHeight + 'px';
                         }
                     } else {
                         coverContent.style.display = 'none';
-                        tabIframe.src = tabUrls[tab];
-                        tabIframe.style.display = 'block';
-                        tabIframe.style.height = '0';
+                        if (iframes[tab]) {
+                            iframes[tab].style.display = 'block';
+                            // Give browser a tick to render display:block before resizing
+                            setTimeout(function() {
+                                bmgfResizeTabIframe(iframes[tab]);
+                            }, 50);
+                        }
                     }
                 };
             })();
@@ -1163,6 +1275,9 @@ HTML;
                     margin: 0 auto;
                     background: var(--background);
                     overflow: hidden;
+                }
+                .bmgf-loader-overlay {
+                    transition: opacity 0.3s ease;
                 }
             </style>
         </div>
